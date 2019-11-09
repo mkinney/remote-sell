@@ -1,5 +1,6 @@
 test-results/
 tmp/
 routes/
+none
 .*swp
 .DS_Store
