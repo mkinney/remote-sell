@@ -1,0 +1,58 @@
+{{set . "title" "Home"}}
+{{template "header.html" .}}
+
+<header class="jumbotron" style="background-color:#A9F16C">
+  <div class="container">
+    <div class="row">
+      <h1>{{.greeting}}</h1>
+      <p></p>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="row">
+    <div class="span6">
+    {{template "flash.html" .}}
+
+    <form action="/App/RemoteSell" method="GET">
+
+      <div>
+        {{with $field := field "location" .}}
+        <label for="location">Location</label>
+        <select name="{{$field.Name}}">
+          {{option $field "Portland" "Portland"}}
+          {{option $field "Clackamas" "Clackamas"}}
+          {{option $field "Salem" "Salem"}}
+        </select>
+        {{end}}
+      </div>
+
+      <div>
+        {{with $field := field "crypto" .}}
+        <label for="crypto">Crypto</label>
+        <select name="{{$field.Name}}">
+          {{option $field "BTC" "BTC"}}
+          {{option $field "LTC" "LTC"}}
+          {{option $field "DASH" "DASH"}}
+        </select>
+        {{end}}
+      </div>
+
+      <div>
+        {{with $field := field "fiat" .}}
+        <label for="fiat">Amount $</label>
+        <input maxlength=4 size=4 type="text" name="{{$field.Name}}" value="{{$field.Flash}}"/><br/>
+        {{end}}
+      </div>
+
+      <div>
+        <input type="submit" value="Submit" />
+      </div>
+
+    </form>
+    </div>
+  </div>
+</div>
+
+{{template "footer.html" .}}
