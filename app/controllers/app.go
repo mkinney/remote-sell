@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"net/url"
 	"net/http"
+	"crypto/tls"
 )
 
 type App struct {
@@ -43,7 +44,11 @@ func getCryptoAmount(batm_url string, serial_number string, crypto_currency stri
 
   full_url := batm_url + "/calculate_crypto_amount" + "?" + v.Encode()
   //fmt.Println(full_url)
-  response, err := http.Get(full_url)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+  response, err := client.Get(full_url)
   if err != nil {
     //log.Fatal(err)
 		fmt.Println(err)
@@ -85,7 +90,11 @@ func sellCrypto(batm_url string, serial_number string, crypto_currency string, f
 
   full_url := batm_url + "/sell_crypto" + "?" + v.Encode()
   //fmt.Println(full_url)
-  response, err := http.Get(full_url)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+  response, err := client.Get(full_url)
   if err != nil {
     //log.Fatal(err)
 		fmt.Println(err)
@@ -169,17 +178,38 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 	}
 	fmt.Println("BATM url:", batm_url)
 
+	// do basic field validation before web service calls
+	if c.Validation.HasErrors() {
+		c.Validation.Keep()
+		c.FlashParams()
+		return c.Redirect(App.Index)
+	}
+
 	crypto_amount := getCryptoAmount(batm_url, serialNumber, crypto, fiat)
 	if crypto_amount < 0.000000001 {
 		c.Validation.Error("INTERNAL could not get crypto_amount (code 21).")
 	}
 	fmt.Println("crypto_amount:", crypto_amount)
 
+	// I do not like the repeat of the validation error check, but it is best
+	// to fail early before trying the sell_crypto call
+	if c.Validation.HasErrors() {
+		c.Validation.Keep()
+		c.FlashParams()
+		return c.Redirect(App.Index)
+	}
+
 	sr := sellCrypto(batm_url, serialNumber, crypto, fiat, crypto_amount)
 	if sr.ValidityInMinutes < 1 {
 		c.Validation.Error("INTERNAL error processing sell crypto (code 22.")
 	}
 	fmt.Println("sr:", sr)
+
+	if c.Validation.HasErrors() {
+		c.Validation.Keep()
+		c.FlashParams()
+		return c.Redirect(App.Index)
+	}
 
 	prefix := CryptoToPrefix(crypto)
 	qrString := fmt.Sprintf("%s%s?amount=%f&label=%s&uuid=%s", prefix, sr.CryptoAddress, crypto_amount, sr.RemoteTransactionID, sr.TransactionUUID)
@@ -193,12 +223,6 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 	err := qrcode.WriteFile(qrString, qrcode.Medium, 256, "public/img/rs_" + hidden_uuid + ".png")
 	if err != nil {
 		fmt.Println(err)
-	}
-
-	if c.Validation.HasErrors() {
-		c.Validation.Keep()
-		c.FlashParams()
-		return c.Redirect(App.Index)
 	}
 
 	return c.Render(location, crypto, fiat, hidden_uuid, hidden_crypto_amount, hidden_minutes, hidden_address)

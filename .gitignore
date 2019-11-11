@@ -6,3 +6,4 @@ none
 .*swp
 .DS_Store
 public/img/qr.png
+*.tar.gz
