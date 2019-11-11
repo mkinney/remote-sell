@@ -21,9 +21,7 @@
         {{with $field := field "location" .}}
         <label for="location">Location</label>
         <select name="{{$field.Name}}">
-          {{option $field "Portland" "Portland"}}
-          {{option $field "Clackamas" "Clackamas"}}
-          {{option $field "Salem" "Salem"}}
+          {{option $field "1" "Clackamas Town Center Mall"}}
         </select>
         {{end}}
       </div>
@@ -34,7 +32,6 @@
         <select name="{{$field.Name}}">
           {{option $field "BTC" "BTC"}}
           {{option $field "LTC" "LTC"}}
-          {{option $field "DASH" "DASH"}}
         </select>
         {{end}}
       </div>
@@ -45,6 +42,11 @@
         <input maxlength=4 size=4 type="text" name="{{$field.Name}}" value="{{$field.Flash}}"/><br/>
         {{end}}
       </div>
+
+      <input type="hidden" name="hidden_uuid" value="" />
+      <input type="hidden" name="hidden_crypto_amount" value="" />
+      <input type="hidden" name="hidden_minutes" value="" />
+      <input type="hidden" name="hidden_address" value="" />
 
       <div>
         <input type="submit" value="Submit" />

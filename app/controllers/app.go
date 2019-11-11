@@ -124,6 +124,8 @@ func CryptoToPrefix(crypto string) string {
 	switch crypto {
 	case "BTC":
 		retval = "bitcoin:"
+	case "LTC":
+		retval = "litecoin:"
 	}
 	return retval
 }
@@ -132,10 +134,8 @@ func LocationToSerialNumber(location string) string {
 	retval := ""
 	fmt.Println("in LocationToSerialNumber... location:", location)
 	switch location {
-	case "Portland":
-		retval = "BT102781"
-	case "Clackamas":
-		retval = "BT101234"
+	case "1": // Clackamas Town Center Mall
+		retval = "BT300795"
 	}
 	fmt.Println("leaving LocationToSerialNumber... retval:", retval)
 	return retval
@@ -146,7 +146,8 @@ func (c App) Index() revel.Result {
 	return c.Render(greeting)
 }
 
-func (c App) RemoteSell(location string, crypto string, fiat float64) revel.Result {
+// hidden_ fields should be blank incoming
+func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uuid string, hidden_crypto_amount  string, hidden_minutes string, hidden_address string) revel.Result {
 	c.Validation.Required(location).Message("Location is a required field.")
 	fmt.Printf("%+v", c.Validation)
 
@@ -180,9 +181,7 @@ func (c App) RemoteSell(location string, crypto string, fiat float64) revel.Resu
 	}
 	fmt.Println("sr:", sr)
 
-	// TODO: create temp file for qr code
 	// TODO: when/how to clean up old qr code tmp files?
-	// TODO: do we care that anyone can see the qr.png file(s)?
 
 	// TODO: prob have to deal with insecure https
 
@@ -190,7 +189,12 @@ func (c App) RemoteSell(location string, crypto string, fiat float64) revel.Resu
 	qrString := fmt.Sprintf("%s%s?amount=%f&label=%s&uuid=%s", prefix, sr.CryptoAddress, crypto_amount, sr.RemoteTransactionID, sr.TransactionUUID)
 	fmt.Println(qrString)
 
-	err := qrcode.WriteFile(qrString, qrcode.Medium, 256, "public/img/qr.png")
+	// write the barcode to a temp file based on uuid
+	hidden_uuid = sr.RemoteTransactionID
+	hidden_crypto_amount = fmt.Sprintf("%f", crypto_amount)
+	hidden_minutes = fmt.Sprintf("%d", sr.ValidityInMinutes)
+	hidden_address = sr.CryptoAddress
+	err := qrcode.WriteFile(qrString, qrcode.Medium, 256, "public/img/rs_" + hidden_uuid + ".png")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -201,5 +205,5 @@ func (c App) RemoteSell(location string, crypto string, fiat float64) revel.Resu
 		return c.Redirect(App.Index)
 	}
 
-	return c.Render(location, crypto, fiat)
+	return c.Render(location, crypto, fiat, hidden_uuid, hidden_crypto_amount, hidden_minutes, hidden_address)
 }

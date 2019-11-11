@@ -1,12 +1,16 @@
 {{set . "title" "Remote Sell"}}
 {{template "header.html" .}}
 
-<h1>Request to sell ${{.fiat}} of {{.crypto}} at {{.location}}</h1>
+You have requested to sell <b>${{.fiat}}</b> of <b>{{.crypto}}</b> for Location:<b>{{.location}}</b>.</h1>
 
+<ol>Next steps:
+  <li>Send <b>{{.hidden_crypto_amount}}</b> of <b>{{.crypto}}</b> within the next <b>{{.hidden_minutes}}</b> minutes to this address:<b>{{.hidden_address}}</b></li>
+  <li>Go to the the location where the machine is located.</li>
+  <li>Present this QR code and follow instructions:
+<img src="/public/img/rs_{{.hidden_uuid}}.png">
+  </li>
+</ol>
 
-<img src="/public/img/qr.png">
-
-<br>
 <br>
 <a href="/">Back to form</a>
 {{template "footer.html" .}}
