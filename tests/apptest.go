@@ -1,6 +1,7 @@
 package tests
 
 import (
+	//"testing"
 	"github.com/revel/revel/testing"
 )
 
@@ -21,3 +22,18 @@ func (t *AppTest) TestThatIndexPageWorks() {
 func (t *AppTest) After() {
 	println("Tear down")
 }
+
+/*
+func (t *AppTest) TestMike() {
+	println("Mike")
+	t.Assertf("foo" == "bar", "Expected '%s', got '%s'", "foo", "bar")
+}
+
+func (t *AppTest) TestMike2() {
+	println("Mike2")
+	loc := "1"
+	exp := "12345"
+	got := LocationToSerialNumber(loc)
+	t.Assertf(got != exp, "Expected '%s', got '%s'", exp, got)
+}
+*/
