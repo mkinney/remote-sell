@@ -1,7 +1,12 @@
 {{set . "title" "Remote Sell"}}
 {{template "header.html" .}}
 
-<h1>So, you want to sell ${{.fiat}} of {{.crypto}} at {{.location}}</h1>
-<a href="/">Back to form</a>
+<h1>Request to sell ${{.fiat}} of {{.crypto}} at {{.location}}</h1>
 
+
+<img src="/public/img/qr.png">
+
+<br>
+<br>
+<a href="/">Back to form</a>
 {{template "footer.html" .}}
