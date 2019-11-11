@@ -181,10 +181,6 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 	}
 	fmt.Println("sr:", sr)
 
-	// TODO: when/how to clean up old qr code tmp files?
-
-	// TODO: prob have to deal with insecure https
-
 	prefix := CryptoToPrefix(crypto)
 	qrString := fmt.Sprintf("%s%s?amount=%f&label=%s&uuid=%s", prefix, sr.CryptoAddress, crypto_amount, sr.RemoteTransactionID, sr.TransactionUUID)
 	fmt.Println(qrString)
