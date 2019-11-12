@@ -1,16 +1,27 @@
 {{set . "title" "Remote Sell"}}
 {{template "header.html" .}}
 
-You have requested to sell <b>${{.fiat}}</b> of <b>{{.crypto}}</b> for Location:<b>{{.location}}</b>.</h1>
-
-<ol>Next steps:
-  <li>Send <b>{{.hidden_crypto_amount}}</b> of <b>{{.crypto}}</b> within the next <b>{{.hidden_minutes}}</b> minutes to this address:<b>{{.hidden_address}}</b>. Note that you can open your wallet and likely scan the QR code below.</li>
-  <li>Go to the the location where the machine is located.</li>
-  <li>Click on "Redeem Ticket", scan this QR code and follow instructions:
-<img src="/public/img/rs_{{.hidden_uuid}}.png">
-  </li>
-</ol>
-
+&nbsp;You have requested to sell <b>${{.fiat}}</b> of <b>{{.crypto}}</b>
 <br>
-<a href="/">Back to form</a>
+&nbsp;for Location:<b>{{.location}}</b> on
+<b>{{.hidden_now.Format "Jan 02, 2006 15:04:05 UTC"}}</b>
+<br>
+<br>
+&nbsp;<b>Next steps</b>:
+<br>
+&nbsp;1. Send <b>{{.hidden_crypto_amount}}</b> of <b>{{.crypto}}</b> within the next <b>{{.hidden_minutes}}</b> minutes to this address:
+<br>
+&nbsp;&nbsp;&nbsp;<b>{{.hidden_address}}</b>
+<br>
+&nbsp;Note: You probably can scan the QR below for your crypto wallet.
+<br>
+<br>
+&nbsp;2. Go to the the location where the machine is located.
+<br>
+<br>
+&nbsp;3. Click on "Redeem Ticket", scan this QR code and follow instructions:
+<br>
+<img src="/public/img/rs_{{.hidden_uuid}}.png">
+<br>
+&nbsp;<a href="/">Back to form</a>
 {{template "footer.html" .}}

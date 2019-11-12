@@ -40,7 +40,7 @@
       <div>
         {{with $field := field "fiat" .}}
         <label for="fiat">Amount $</label>
-        <input maxlength=4 size=4 type="text" name="{{$field.Name}}" value="{{$field.Flash}}"/><br/>
+        <input maxlength=7 size=7 type="text" name="{{$field.Name}}" value="{{$field.Flash}}"/><br/>
         {{end}}
       </div>
 
