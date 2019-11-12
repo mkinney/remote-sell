@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"net/url"
+	"math"
+	"strconv"
 	"time"
 	"net/http"
 	"crypto/tls"
@@ -36,7 +38,33 @@ type SellResponse struct {
   ValidityInMinutes   int     `json:"validityInMinutes"`
 }
 
-func getCryptoAmount(batm_url string, serial_number string, crypto_currency string, fiat_amount float64) float64 {
+// rounding from: https://socketloop.com/tutorials/golang-round-float-to-precision-example
+func (c App) Round(input float64) float64 {
+	if input < 0 {
+		return math.Ceil(input - 0.5)
+	}
+	return math.Floor(input + 0.5)
+}
+
+func (c App) RoundUp(input float64, places int) (newVal float64) {
+	var round float64
+	pow := math.Pow(10, float64(places))
+	digit := pow * input
+	round = math.Ceil(digit)
+	newVal = round / pow
+	return
+}
+
+func (c App) RoundDown(input float64, places int) (newVal float64) {
+	var round float64
+	pow := math.Pow(10, float64(places))
+	digit := pow * input
+	round = math.Floor(digit)
+	newVal = round / pow
+	return
+}
+
+func (c App) getCryptoAmount(batm_url string, serial_number string, crypto_currency string, fiat_amount float64) float64 {
   v := url.Values{}
   v.Set("serial_number", serial_number)
   v.Add("fiat_currency", "USD")
@@ -44,47 +72,56 @@ func getCryptoAmount(batm_url string, serial_number string, crypto_currency stri
   v.Add("fiat_amount", fmt.Sprintf("%f", fiat_amount))
 
   full_url := batm_url + "/calculate_crypto_amount" + "?" + v.Encode()
-  revel.AppLog.Info(full_url)
+  c.Log.Info("in getCryptoAmount", "full_url", full_url)
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
   response, err := client.Get(full_url)
   if err != nil {
-		revel.AppLog.Error("Error in Get on getCryptoAmount", err)
+		c.Log.Error("Error in Get on getCryptoAmount", "error", err)
 		return 0
   }
   defer response.Body.Close()
 
 	// It looks like it returns 200 even when there is an error.
   if response.StatusCode != 200 {
-		revel.AppLog.Error("Did not get a 200 from getCryptoAmount", err)
+		c.Log.Error("Did not get a 200 from getCryptoAmount", "error", err)
 		return 0
   }
 
   responseData, err := ioutil.ReadAll(response.Body)
   if err != nil {
-		revel.AppLog.Error("Error in response to getCryptoAmount", err)
+		c.Log.Error("Error in response to getCryptoAmount", "error", err)
 		return 0
   }
-	revel.AppLog.Debug(string(responseData))
+	c.Log.Debug("In getCryptoAmount", "responseData:", string(responseData))
 
 	// Looks like this is how to detect an error.
 	if string(responseData) == "ERROR" {
-		revel.AppLog.Error("Got ERROR when calling the calculate_crypto_amount service. Double check the BATM configuration for serial_number.", full_url)
+		c.Log.Error("Got ERROR when calling the calculate_crypto_amount service. Double check the BATM configuration for serial_number.", "full_url", full_url)
 		return 0
   }
 
   m := map[string]CalculateCryptoAmountResponsePartial{}
   err = json.Unmarshal(responseData, &m)
   if err != nil {
-		revel.AppLog.Error("Error in ummarshal in getCryptoAmount", err)
+		c.Log.Error("Error in ummarshal in getCryptoAmount", "error", err)
 		return 0
   }
-  return m[crypto_currency].CryptoAmount
+	raw := m[crypto_currency].CryptoAmount
+	tmp := fmt.Sprintf("%f", c.RoundUp(raw, 6))
+	c.Log.Debug("Rounding", "raw amount:", raw, "tmp", tmp)
+	rounded, err := strconv.ParseFloat(tmp, 6)
+	if err != nil {
+		c.Log.Error("Could not ParseFloat getCryptoAmount", "error:", err)
+		return 0
+	}
+	c.Log.Debug("In getCryptoAmount", "rounded:", rounded)
+  return rounded
 }
 
-func sellCrypto(batm_url string, serial_number string, crypto_currency string, fiat_amount float64, crypto_amount float64) SellResponse {
+func (c App) sellCrypto(batm_url string, serial_number string, crypto_currency string, fiat_amount float64, crypto_amount float64) SellResponse {
   v := url.Values{}
   v.Set("serial_number", serial_number)
   v.Add("fiat_currency", "USD")
@@ -93,49 +130,48 @@ func sellCrypto(batm_url string, serial_number string, crypto_currency string, f
   v.Add("crypto_amount", fmt.Sprintf("%.f", crypto_amount))
 
   full_url := batm_url + "/sell_crypto" + "?" + v.Encode()
-  revel.AppLog.Debug(full_url)
+  c.Log.Debug("in sellCrypto", "full_url", full_url)
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
   response, err := client.Get(full_url)
   if err != nil {
-		revel.AppLog.Error("Error in sellCrypto on Get", err)
+		c.Log.Error("Error in sellCrypto on Get", "error", err)
 		return SellResponse{}
   }
   defer response.Body.Close()
 
 	// It looks like it returns 200 even when there is an error.
   if response.StatusCode != 200 {
-		revel.AppLog.Error("response from sellCrypto was not 200", err)
+		c.Log.Error("response from sellCrypto was not 200", "error", err)
 		return SellResponse{}
   }
 
   responseData, err := ioutil.ReadAll(response.Body)
   if err != nil {
-		revel.AppLog.Error("Could not read response in sellCrypto", err)
+		c.Log.Error("Could not read response in sellCrypto", "error", err)
 		return SellResponse{}
   }
-	revel.AppLog.Debug("reponse from sellCrypto", responseData)
+	c.Log.Debug("In sellCrypto", "reponse from sellCrypto", string(responseData))
 
 	// Looks like this is how to detect an error.
 	if string(responseData) == "ERROR" {
-		revel.AppLog.Error("Got ERROR when calling the sell_crypto service. Double check the BATM configuration for serial_number", full_url)
+		c.Log.Error("Got ERROR when calling the sell_crypto service. Double check the BATM configuration for serial_number", "full_url", full_url)
 		return SellResponse{}
   }
 
   sr := SellResponse{}
   err = json.Unmarshal(responseData, &sr)
   if err != nil {
-		revel.AppLog.Error("Error in unmarshal of sellCrypto", err)
+		c.Log.Error("Error in unmarshal of sellCrypto", "error", err)
 		return SellResponse{}
   }
   return sr
 }
 
-// the start of a BTC barcode is "bitcoin:"
-// don't know what the other types are
-func CryptoToPrefix(crypto string) string {
+// the start of a barcode (for example: BTC is "bitcoin:")
+func (c App) CryptoToPrefix(crypto string) string {
 	retval := ""
 	switch crypto {
 	case "BTC":
@@ -146,16 +182,14 @@ func CryptoToPrefix(crypto string) string {
 	return retval
 }
 
-func LocationToSerialNumber(location string) string {
+func (c App) LocationToSerialNumber(location string) string {
 	retval := ""
-	revel.AppLog.Debug("in LocationToSerialNumber... location:", location)
 	switch location {
 	case "1": // Clackamas Town Center Mall
 		retval = "BT300795"
 	case "2": // Clackamas Test
 		retval = "BT102781" // test
 	}
-	revel.AppLog.Debug("leaving LocationToSerialNumber... retval:", retval)
 	return retval
 }
 
@@ -167,7 +201,7 @@ func (c App) Index() revel.Result {
 // hidden_ fields should be blank incoming
 func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uuid string, hidden_crypto_amount  string, hidden_minutes string, hidden_address string, hidden_now time.Time) revel.Result {
 	c.Validation.Required(location).Message("Location is a required field.")
-	//revel.AppLog.Debug("%+v", c.Validation)
+	//c.Log.Debug("%+v", c.Validation)
 
 	c.Validation.Required(crypto).Message("Crypto is a required field.")
 	c.Validation.MinSize(crypto, 3).Message("The value for crypto is not long enough.")
@@ -175,7 +209,8 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 	c.Validation.RangeFloat(fiat, 20.0, 3000.0).Message("Can only sell between $20 and $3000.")
 
 	// lookup the serial number from the location
-	serialNumber := LocationToSerialNumber(location)
+	serialNumber := c.LocationToSerialNumber(location)
+	c.Log.Debug("location", location, "serial number:", serialNumber)
 	if serialNumber == "" {
 		e := fmt.Sprintf("INTERNAL Invalid location:%s (code 19)", location)
 		c.Validation.Error(e)
@@ -185,7 +220,7 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 	if batm_url == "" {
 		c.Validation.Error("INTERNAL could not get a batm_url (code 20).")
 	}
-	revel.AppLog.Debug("BATM url:", batm_url)
+	c.Log.Debug("in RemoteSell", "BATM url:", batm_url)
 
 	// do basic field validation before web service calls
 	if c.Validation.HasErrors() {
@@ -194,11 +229,11 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 		return c.Redirect(App.Index)
 	}
 
-	crypto_amount := getCryptoAmount(batm_url, serialNumber, crypto, fiat)
+	crypto_amount := c.getCryptoAmount(batm_url, serialNumber, crypto, fiat)
 	if crypto_amount < 0.000000001 {
 		c.Validation.Error("INTERNAL could not get crypto_amount (code 21).")
 	}
-	revel.AppLog.Debug("crypto_amount:", crypto_amount)
+	c.Log.Debug("in RemoteSell", "crypto_amount:", crypto_amount)
 
 	// I do not like the repeat of the validation error check, but it is best
 	// to fail early before trying the sell_crypto call
@@ -208,11 +243,11 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 		return c.Redirect(App.Index)
 	}
 
-	sr := sellCrypto(batm_url, serialNumber, crypto, fiat, crypto_amount)
+	sr := c.sellCrypto(batm_url, serialNumber, crypto, fiat, crypto_amount)
 	if sr.ValidityInMinutes < 1 {
 		c.Validation.Error("INTERNAL error processing sell crypto (code 22).")
 	}
-	revel.AppLog.Debug("sr:", sr)
+	c.Log.Debug("in RemoteSell", "sr:", sr)
 
 	if c.Validation.HasErrors() {
 		c.Validation.Keep()
@@ -220,9 +255,9 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 		return c.Redirect(App.Index)
 	}
 
-	prefix := CryptoToPrefix(crypto)
+	prefix := c.CryptoToPrefix(crypto)
 	qrString := fmt.Sprintf("%s%s?amount=%f&label=%s&uuid=%s", prefix, sr.CryptoAddress, crypto_amount, sr.RemoteTransactionID, sr.TransactionUUID)
-	revel.AppLog.Debug(qrString)
+	c.Log.Debug("in RemoteSell", "qrString", qrString)
 
 	// write the barcode to a temp file based on uuid
 	hidden_uuid = sr.RemoteTransactionID
@@ -232,7 +267,7 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 	hidden_now = time.Now()
 	err := qrcode.WriteFile(qrString, qrcode.Medium, 256, "public/img/rs_" + hidden_uuid + ".png")
 	if err != nil {
-		revel.AppLog.Error("Could not write qrcode", err)
+		c.Log.Error("Could not write qrcode", "error", err)
 	}
 
 	return c.Render(location, crypto, fiat, hidden_uuid, hidden_crypto_amount, hidden_minutes, hidden_address, hidden_now)

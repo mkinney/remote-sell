@@ -44,6 +44,10 @@ If you add a new BATM (or crypto), need to add it to few places:
 3) in app/views/App/Index.html in the 'select' dropdown
 
 # Notes:
+* Logging wants odd number of args. So, typically do something like this:
+
+    c.Log.Info("in getCryptoAmount", "full_url", full_url)
+
 * Needed to deal with insecure https since "x509: certificate is valid for master.batm.generalbytes.com, not localhost".
   This is a security risk.
 

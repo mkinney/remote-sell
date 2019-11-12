@@ -1,5 +1,5 @@
 run:
-	revel run -a github.com/mkinney/remote-sell
+	revel run -v -a github.com/mkinney/remote-sell
 
 package:
 	rm public/static/img/rs_*.png ; true
