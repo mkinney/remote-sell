@@ -269,6 +269,8 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 	if err != nil {
 		c.Log.Error("Could not write qrcode", "error", err)
 	}
+	// log all requests to Info
+	c.Log.Info("request to remoteSell", "location", location, "crypto", crypto, "fiat", fiat, "hidden_crypto_amount", hidden_crypto_amount, "hidden_minutes", hidden_minutes, "hidden_address", hidden_address, "hidden_uuid", hidden_uuid, "now", hidden_now, "qrString", qrString)
 
 	return c.Render(location, crypto, fiat, hidden_uuid, hidden_crypto_amount, hidden_minutes, hidden_address, hidden_now)
 }
