@@ -1,0 +1,9 @@
+[Unit]
+Description=Remote Sell Service
+
+[Service]
+Type=simple
+User=rs
+Restart=always
+WorkingDirectory=/home/rs/rs
+ExecStart=/home/rs/rs/run.sh
