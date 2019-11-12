@@ -11,6 +11,8 @@ revel run -a  github.com/mkinney/remote-sell
 Notes:
 - Needed to deal with insecure https since "x509: certificate is valid for master.batm.generalbytes.com, not localhost". 
   This is a security risk.
+- Had to run this:
+  ln -s src/github.com/mkinney/remote-sell/public/ public
 
 # TODO:
 - When/how to clean up old qr code tmp files?
