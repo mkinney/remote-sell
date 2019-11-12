@@ -70,7 +70,7 @@ func getCryptoAmount(batm_url string, serial_number string, crypto_currency stri
 
 	// Looks like this is how to detect an error.
 	if string(responseData) == "ERROR" {
-		revel.AppLog.Error("Got ERROR when calling the calculate_crypto_amount service. Double check the BATM configuration for serial_number:%s.", serial_number)
+		revel.AppLog.Error("Got ERROR when calling the calculate_crypto_amount service. Double check the BATM configuration for serial_number.")
 		return 0
   }
 
@@ -119,7 +119,7 @@ func sellCrypto(batm_url string, serial_number string, crypto_currency string, f
 
 	// Looks like this is how to detect an error.
 	if string(responseData) == "ERROR" {
-		revel.AppLog.Error("Got ERROR when calling the sell_crypto service. Double check the BATM configuration for serial_number:%s.", serial_number)
+		revel.AppLog.Error("Got ERROR when calling the sell_crypto service. Double check the BATM configuration for serial_number")
 		return SellResponse{}
   }
 
