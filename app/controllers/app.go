@@ -137,7 +137,8 @@ func LocationToSerialNumber(location string) string {
 	switch location {
 	case "1": // Clackamas Town Center Mall
 		retval = "BT300795"
-		//retval = "BT102781" // test
+	case "2": // Clackamas Test
+		retval = "BT102781" // test
 	}
 	revel.AppLog.Debug("leaving LocationToSerialNumber... retval:", retval)
 	return retval
