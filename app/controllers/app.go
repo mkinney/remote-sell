@@ -43,7 +43,7 @@ func getCryptoAmount(batm_url string, serial_number string, crypto_currency stri
   v.Add("fiat_amount", fmt.Sprintf("%f", fiat_amount))
 
   full_url := batm_url + "/calculate_crypto_amount" + "?" + v.Encode()
-  //fmt.Println(full_url)
+  fmt.Println(full_url)
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -51,7 +51,7 @@ func getCryptoAmount(batm_url string, serial_number string, crypto_currency stri
   response, err := client.Get(full_url)
   if err != nil {
     //log.Fatal(err)
-		fmt.Println(err)
+		fmt.Println("Error in Get", err)
 		return 0
   }
   defer response.Body.Close()
@@ -89,7 +89,7 @@ func sellCrypto(batm_url string, serial_number string, crypto_currency string, f
   v.Add("crypto_amount", fmt.Sprintf("%.f", crypto_amount))
 
   full_url := batm_url + "/sell_crypto" + "?" + v.Encode()
-  //fmt.Println(full_url)
+  fmt.Println(full_url)
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -97,7 +97,7 @@ func sellCrypto(batm_url string, serial_number string, crypto_currency string, f
   response, err := client.Get(full_url)
   if err != nil {
     //log.Fatal(err)
-		fmt.Println(err)
+		fmt.Println("Error in Get", err)
 		return SellResponse{}
   }
   defer response.Body.Close()
@@ -144,7 +144,8 @@ func LocationToSerialNumber(location string) string {
 	fmt.Println("in LocationToSerialNumber... location:", location)
 	switch location {
 	case "1": // Clackamas Town Center Mall
-		retval = "BT300795"
+		//retval = "BT300795"
+		retval = "BT102781" // test
 	}
 	fmt.Println("leaving LocationToSerialNumber... retval:", retval)
 	return retval
@@ -201,7 +202,7 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 
 	sr := sellCrypto(batm_url, serialNumber, crypto, fiat, crypto_amount)
 	if sr.ValidityInMinutes < 1 {
-		c.Validation.Error("INTERNAL error processing sell crypto (code 22.")
+		c.Validation.Error("INTERNAL error processing sell crypto (code 22).")
 	}
 	fmt.Println("sr:", sr)
 
