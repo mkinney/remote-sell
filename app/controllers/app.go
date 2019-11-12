@@ -55,6 +55,7 @@ func getCryptoAmount(batm_url string, serial_number string, crypto_currency stri
   }
   defer response.Body.Close()
 
+	// It looks like it returns 200 even when there is an error.
   if response.StatusCode != 200 {
 		revel.AppLog.Error("Did not get a 200 from getCryptoAmount", err)
 		return 0
@@ -66,6 +67,12 @@ func getCryptoAmount(batm_url string, serial_number string, crypto_currency stri
 		return 0
   }
 	revel.AppLog.Debug(string(responseData))
+
+	// Looks like this is how to detect an error.
+	if string(responseData) == "ERROR" {
+		revel.AppLog.Error("Got ERROR when calling the calculate_crypto_amount service. Double check the BATM configuration for serial_number:%s.", serial_number)
+		return 0
+  }
 
   m := map[string]CalculateCryptoAmountResponsePartial{}
   err = json.Unmarshal(responseData, &m)
@@ -97,6 +104,7 @@ func sellCrypto(batm_url string, serial_number string, crypto_currency string, f
   }
   defer response.Body.Close()
 
+	// It looks like it returns 200 even when there is an error.
   if response.StatusCode != 200 {
 		revel.AppLog.Error("response from sellCrypto was not 200", err)
 		return SellResponse{}
@@ -108,6 +116,12 @@ func sellCrypto(batm_url string, serial_number string, crypto_currency string, f
 		return SellResponse{}
   }
 	revel.AppLog.Debug("reponse from sellCrypto", responseData)
+
+	// Looks like this is how to detect an error.
+	if string(responseData) == "ERROR" {
+		revel.AppLog.Error("Got ERROR when calling the sell_crypto service. Double check the BATM configuration for serial_number:%s.", serial_number)
+		return SellResponse{}
+  }
 
   sr := SellResponse{}
   err = json.Unmarshal(responseData, &sr)
