@@ -55,6 +55,8 @@ If you add a new BATM (or crypto), need to add it to few places:
 
 # TODO:
 * When/how to clean up old qr code tmp files?
+* License?
+* Info about BATM side?
 
 # Welcome to Revel
 
