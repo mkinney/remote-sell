@@ -1,7 +1,10 @@
-run:
+version:
+	git rev-parse HEAD > git_version.txt
+
+run: version
 	revel run -v -a github.com/mkinney/remote-sell
 
-package:
+package: version
 	rm public/static/img/rs_*.png ; true
 	GOOS=linux GOARCH=amd64 revel package -m prod github.com/mkinney/remote-sell
 

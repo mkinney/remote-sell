@@ -2,8 +2,8 @@ package app
 
 import (
 	"log"
-	"os/exec"
-  "strings"
+	"os"
+	"io/ioutil"
 
 	"github.com/revel/revel"
 )
@@ -20,17 +20,16 @@ var (
 )
 
 func getMyVersion() string {
-	gitCommit := ""
-
-	// get the latest commit
-	commit, err := exec.Command("git", "rev-parse", "HEAD").Output()
+	// write git commit from file
+	file, err := os.Open("git_version.txt")
 	if err != nil {
-		log.Println(err)
-	} else {
-		// show only the first characters of last git commit/strip newlines
-		gitCommit = strings.TrimRight(string(commit[0:8]), "\r\n")
+		log.Fatal(err)
+		return ""
 	}
-	return gitCommit
+	defer file.Close()
+
+	gitCommit, err := ioutil.ReadAll(file)
+	return string(gitCommit)[0:8]
 }
 
 func init() {
