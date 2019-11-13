@@ -1,7 +1,6 @@
 package app
 
 import (
-	"log"
 	"os"
 	"io/ioutil"
 
@@ -23,7 +22,7 @@ func getMyVersion() string {
 	// write git commit from file
 	file, err := os.Open("git_version.txt")
 	if err != nil {
-		log.Fatal(err)
+		revel.AppLog.Error("Could not read file with git_version", "err:", err)
 		return ""
 	}
 	defer file.Close()
