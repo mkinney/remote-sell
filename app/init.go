@@ -1,6 +1,10 @@
 package app
 
 import (
+	"log"
+	"os/exec"
+  "strings"
+
 	"github.com/revel/revel"
 )
 
@@ -10,7 +14,24 @@ var (
 
 	// BuildTime revel app build-time (ldflags)
 	BuildTime string
+
+	// Git commit
+	MyVersion string
 )
+
+func getMyVersion() string {
+	gitCommit := ""
+
+	// get the latest commit
+	commit, err := exec.Command("git", "rev-parse", "HEAD").Output()
+	if err != nil {
+		log.Println(err)
+	} else {
+		// show only the first characters of last git commit/strip newlines
+		gitCommit = strings.TrimRight(string(commit[0:8]), "\r\n")
+	}
+	return gitCommit
+}
 
 func init() {
 	// Filters is the default set of global filters.
@@ -29,6 +50,8 @@ func init() {
 		revel.BeforeAfterFilter,       // Call the before and after filter functions
 		revel.ActionInvoker,           // Invoke the action.
 	}
+	MyVersion = getMyVersion()
+	revel.AppLog.Info("Show git commit", "MyVersion:", MyVersion, "BuildTime", BuildTime)
 
 	// Register startup functions with OnAppStart
 	// revel.DevMode and revel.RunMode only work inside of OnAppStart. See Example Startup Script
