@@ -1,5 +1,5 @@
 version:
-	git rev-parse HEAD > git_version.txt
+	git rev-parse HEAD > conf/git_version.txt
 
 run: version
 	revel run -v -a github.com/mkinney/remote-sell

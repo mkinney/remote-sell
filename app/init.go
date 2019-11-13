@@ -20,7 +20,7 @@ var (
 
 func getMyVersion() string {
 	// write git commit from file
-	file, err := os.Open("git_version.txt")
+	file, err := os.Open("conf/git_version.txt")
 	if err != nil {
 		revel.AppLog.Error("Could not read file with git_version", "err:", err)
 		return ""

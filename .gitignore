@@ -1,5 +1,5 @@
 test-results/
-git_version.txt
+conf/git_version.txt
 public/img/rs_*.png
 tmp/
 routes/
