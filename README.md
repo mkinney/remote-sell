@@ -89,7 +89,6 @@ or
 
 # TODO:
 * When/how to clean up old qr code tmp files?
-* License? (will most likely use same license as BATM public, but I don't see a license... so I've opened issue.)
 
 # Code Layout
 

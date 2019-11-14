@@ -1,3 +1,8 @@
+/*
+    Copyright (C) 2019 Mike Kinney
+		See LICENSE.txt
+ */
+
 package controllers
 
 import (
