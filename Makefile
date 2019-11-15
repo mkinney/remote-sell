@@ -10,3 +10,6 @@ package: version
 
 deploy:
 	scp remote-sell.tar.gz bcnw_test:/tmp
+
+deploy_prod:
+	scp remote-sell.tar.gz bcnw:/tmp
