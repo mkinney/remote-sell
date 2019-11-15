@@ -12,8 +12,6 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"net/url"
-	"math"
-	"strconv"
 	"time"
 	"net/http"
 	"crypto/tls"
@@ -21,11 +19,6 @@ import (
 
 type App struct {
 	*revel.Controller
-}
-
-type CalculateCryptoAmountResponsePartial struct {
-  CryptoAmount        float64
-  // Note: Ignoring rest of fields
 }
 
 type SellResponse struct {
@@ -43,96 +36,13 @@ type SellResponse struct {
   ValidityInMinutes   int     `json:"validityInMinutes"`
 }
 
-// rounding from: https://socketloop.com/tutorials/golang-round-float-to-precision-example
-func (c App) Round(input float64) float64 {
-	if input < 0 {
-		return math.Ceil(input - 0.5)
-	}
-	return math.Floor(input + 0.5)
-}
-
-func (c App) RoundUp(input float64, places int) (newVal float64) {
-	var round float64
-	pow := math.Pow(10, float64(places))
-	digit := pow * input
-	round = math.Ceil(digit)
-	newVal = round / pow
-	return
-}
-
-func (c App) RoundDown(input float64, places int) (newVal float64) {
-	var round float64
-	pow := math.Pow(10, float64(places))
-	digit := pow * input
-	round = math.Floor(digit)
-	newVal = round / pow
-	return
-}
-
-func (c App) getCryptoAmount(batm_url string, serial_number string, crypto_currency string, fiat_amount float64) float64 {
+func (c App) sellCrypto(batm_url string, serial_number string, crypto_currency string, fiat_amount float64) SellResponse {
   v := url.Values{}
   v.Set("serial_number", serial_number)
   v.Add("fiat_currency", "USD")
   v.Add("crypto_currency", crypto_currency)
   v.Add("fiat_amount", fmt.Sprintf("%f", fiat_amount))
-
-  full_url := batm_url + "/calculate_crypto_amount" + "?" + v.Encode()
-  c.Log.Info("in getCryptoAmount", "full_url", full_url)
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Transport: tr}
-  response, err := client.Get(full_url)
-  if err != nil {
-		c.Log.Error("Error in Get on getCryptoAmount", "error", err)
-		return 0
-  }
-  defer response.Body.Close()
-
-	// It looks like it returns 200 even when there is an error.
-  if response.StatusCode != 200 {
-		c.Log.Error("Did not get a 200 from getCryptoAmount", "error", err)
-		return 0
-  }
-
-  responseData, err := ioutil.ReadAll(response.Body)
-  if err != nil {
-		c.Log.Error("Error in response to getCryptoAmount", "error", err)
-		return 0
-  }
-	c.Log.Debug("In getCryptoAmount", "responseData:", string(responseData))
-
-	// Looks like this is how to detect an error.
-	if string(responseData) == "ERROR" {
-		c.Log.Error("Got ERROR when calling the calculate_crypto_amount service. Double check the BATM configuration for serial_number.", "full_url", full_url)
-		return 0
-  }
-
-  m := map[string]CalculateCryptoAmountResponsePartial{}
-  err = json.Unmarshal(responseData, &m)
-  if err != nil {
-		c.Log.Error("Error in ummarshal in getCryptoAmount", "error", err)
-		return 0
-  }
-	raw := m[crypto_currency].CryptoAmount
-	tmp := fmt.Sprintf("%f", c.RoundUp(raw, 6))
-	c.Log.Debug("Rounding", "raw amount:", raw, "tmp", tmp)
-	rounded, err := strconv.ParseFloat(tmp, 6)
-	if err != nil {
-		c.Log.Error("Could not ParseFloat getCryptoAmount", "error:", err)
-		return 0
-	}
-	c.Log.Debug("In getCryptoAmount", "rounded:", rounded)
-  return rounded
-}
-
-func (c App) sellCrypto(batm_url string, serial_number string, crypto_currency string, fiat_amount float64, crypto_amount float64) SellResponse {
-  v := url.Values{}
-  v.Set("serial_number", serial_number)
-  v.Add("fiat_currency", "USD")
-  v.Add("crypto_currency", crypto_currency)
-  v.Add("fiat_amount", fmt.Sprintf("%f", fiat_amount))
-  v.Add("crypto_amount", fmt.Sprintf("%.f", crypto_amount))
+  v.Add("crypto_amount", "0.0")
 
   full_url := batm_url + "/sell_crypto" + "?" + v.Encode()
   c.Log.Debug("in sellCrypto", "full_url", full_url)
@@ -234,21 +144,9 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 		return c.Redirect(App.Index)
 	}
 
-	crypto_amount := c.getCryptoAmount(batm_url, serialNumber, crypto, fiat)
-	if crypto_amount < 0.000000001 {
-		c.Validation.Error("INTERNAL could not get crypto_amount (code 21).")
-	}
-	c.Log.Debug("in RemoteSell", "crypto_amount:", crypto_amount)
-
-	// I do not like the repeat of the validation error check, but it is best
-	// to fail early before trying the sell_crypto call
-	if c.Validation.HasErrors() {
-		c.Validation.Keep()
-		c.FlashParams()
-		return c.Redirect(App.Index)
-	}
-
-	sr := c.sellCrypto(batm_url, serialNumber, crypto, fiat, crypto_amount)
+	// Note: The CryptoAmount will be calcuated.
+	sr := c.sellCrypto(batm_url, serialNumber, crypto, fiat)
+	crypto_amount := sr.CryptoAmount
 	if sr.ValidityInMinutes < 1 {
 		c.Validation.Error("INTERNAL error processing sell crypto (code 22).")
 	}
