@@ -1,6 +1,8 @@
 # remote-sell
 
-Repository for doing remote sell processing of crypto from Bitcoin ATMs. A "remote sell" is when a user does not need to be next to the BATM for a request to sell some crypto. They can visit this page (most likely from their cellphone), enter the amount of fiat and crypto to sell. A QR code will be generated that they can use to send crypto. Once the crypto confirms, they can go to the BATM and get their money using the QR code. This service is needed because some cryptos (like BTC) can take more than 10 minutes to confirm. So, a person may not want to wait around the BATM for confirmations. They can "plan ahead".
+Repository for doing remote sell processing of crypto from Bitcoin ATMs.
+
+A "remote sell" is when a user does not need to be next to the BATM for a request to sell some crypto. They can visit this page (most likely from their cellphone), enter the amount of fiat and crypto to sell. A QR code will be generated that they can use to send crypto. Once the crypto confirms, they can go to the BATM and get their money using the QR code. This service is needed because some cryptos (like BTC) can take more than 10 minutes to confirm. So, a person may not want to wait around the BATM for confirmations. They can "plan ahead".
 
 # BATM setup
 For BATM side, you will need to clone/build https://github.com/GENERALBYTESCOM/batm_public. Be sure to uncomment `server_extensions_extra/src/main/resources/batm-extensions.xml` then follow the build steps. For instance, the line should look like this:
@@ -14,33 +16,36 @@ For this service, I am development on a mac and code runs on Ubuntu.
 
 To do remote_sell development, I assume that you went thru the revel getting started. (go installed, revel installed)
 
-    go get -u github.com/skip2/go-qrcode/...
+    `go get -u github.com/skip2/go-qrcode/...`
 
 I initially generated this remote_sell service with this command:
 
-    revel new github.com/mkinney/remote-sell
+    `revel new github.com/mkinney/remote-sell`
 
 Do development like this:
 
-    revel run -a  github.com/mkinney/remote-sell
+    `revel run -a  github.com/mkinney/remote-sell`
 
 or simply:
 
-    make run
+    `make run`
 
 # To prepare for initial deployment of remote_sell service:
 
 Create a new user `rs` and change them so they use the bash shell:
 
+    ```
     useradd -m rs
     usermod -s /bin/bash rs
     sudo su - rs
     mkdir rs
     cd rs
     tar zxf /tmp/remote-sell.tar.gz
+    ```
 
 To create/start service: (must be root)
 
+    ```
     # copy over the remote_sell.service file from repo to /home/rs/remote_sell.service
     # (do the next steps as root)
     cp /home/rs/remote_sell.service /etc/systemd/system/remote_sell.service
@@ -48,25 +53,28 @@ To create/start service: (must be root)
     systemctl start remote_sell.service
     systemctl status remote_sell.service
     systemctl enable remote_sell.service
+    ```
 
 * Run these commands (only to run these once as `rs` user in the /home/rs/rs directory):
 
+    ```
     ln -s src/github.com/mkinney/remote-sell/public/ public
     ln -s src/github.com/mkinney/remote-sell/log/ log
     ln -s src/github.com/mkinney/remote-sell/conf/ conf
+    ```
 
 # Deploy a new version (from mac):
 
-    make package
-    make deploy
+    `make package`
+    `make deploy`
 
 On remote:
 
-    systemctl stop remote_sell ; cd /home/rs/rs/ ; tar zxf /tmp/remote-sell.tar.gz ; rm -rf public/img/rs*png ; systemctl start remote_sell
+    `systemctl stop remote_sell ; cd /home/rs/rs/ ; tar zxf /tmp/remote-sell.tar.gz ; rm -rf public/img/rs*png ; systemctl start remote_sell`
 
 To make this easier, in the root/.bashrc setup this alias
 
-    alias drs='systemctl stop remote_sell ; cd /home/rs/rs/ ; tar zxf /tmp/remote-sell.tar.gz ; rm -rf public/img/rs*png ; systemctl start remote_sell'
+    `alias drs='systemctl stop remote_sell ; cd /home/rs/rs/ ; tar zxf /tmp/remote-sell.tar.gz ; rm -rf public/img/rs*png ; systemctl start remote_sell'`
 
 That way you can just run `drs` to do all of that on the server side.
 
@@ -76,21 +84,25 @@ That way you can just run `drs` to do all of that on the server side.
 * You probably want to change batm_url values in conf/app.conf.
 
 * If you add a new BATM (or crypto), need to add it to few places:
+
 1) in app/controllers/app.go's LocationToSerialNumber function
+
 2) may need to add new crypto prefix to CryptoToPrefix
+
 3) in app/views/App/Index.html in the 'select' dropdown
+
 
 * To see build version on running instance: (be sure to have terminal width wide enough)
 
-    journalctl -u remote_sell
+    `journalctl -u remote_sell`
 
 or
 
-    systemctl status remote_sell
+    `systemctl status remote_sell`
 
 * For development, revel logging wants an odd number of args. So, typically do something like this:
 
-    c.Log.Info("in getCryptoAmount", "full_url", full_url)
+    `c.Log.Info("in getCryptoAmount", "full_url", full_url)`
 
 * Needed to deal with insecure https since "x509: certificate is valid for master.batm.generalbytes.com, not localhost".
   This is a security risk.
