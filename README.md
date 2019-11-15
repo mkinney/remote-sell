@@ -30,17 +30,26 @@ or simply:
 
 # To prepare for initial deployment of remote_sell service:
 
+Create a new user `rs` and change them so they use the bash shell:
+
+    useradd -m rs
+    usermod -s /bin/bash rs
+    sudo su - rs
+    mkdir rs
+    cd rs
+    tar zxf /tmp/remote-sell.tar.gz
+
 To create/start service: (must be root)
 
     # copy over the remote_sell.service file from repo to /home/rs/remote_sell.service
     # (do the next steps as root)
-    # cp /home/rs/remote_sell.service /etc/systemd/system/remote_sell.service
-    # systemctl daemon-reload
-    # systemctl start remote_sell.service
-    # systemctl status remote_sell.service
-    # systemctl enable remote_sell.service
+    cp /home/rs/remote_sell.service /etc/systemd/system/remote_sell.service
+    systemctl daemon-reload
+    systemctl start remote_sell.service
+    systemctl status remote_sell.service
+    systemctl enable remote_sell.service
 
-* Run these commands (only to run these once as `rs` user):
+* Run these commands (only to run these once as `rs` user in the /home/rs/rs directory):
 
     ln -s src/github.com/mkinney/remote-sell/public/ public
     ln -s src/github.com/mkinney/remote-sell/log/ log

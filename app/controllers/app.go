@@ -102,8 +102,8 @@ func (c App) LocationToSerialNumber(location string) string {
 	switch location {
 	case "1": // Clackamas Town Center Mall
 		retval = "BT300795"
-	case "2": // Clackamas Test
-		retval = "BT102781" // test
+	case "2": // Pioneer Place Mall
+		retval = "BT300303"
 	}
 	return retval
 }
