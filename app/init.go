@@ -32,7 +32,7 @@ func getMyVersion() string {
 	defer file.Close()
 
 	gitCommit, err := ioutil.ReadAll(file)
-	return string(gitCommit)[0:8]
+	return string(gitCommit)[0:7]
 }
 
 func init() {
