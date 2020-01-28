@@ -104,6 +104,26 @@ func (c App) LocationToSerialNumber(location string) string {
 		retval = "BT300795"
 	case "2": // Pioneer Place Mall
 		retval = "BT300303"
+	case "3": // Beaverton Postal Annex
+		retval = "BT300047"
+	case "4": // Salem City Center Mall
+		retval = "BT300076"
+	case "5": // Springfield
+		retval = "BT300111"
+	case "6": // Mt. Shasta Mall
+		retval = "BT300407"
+	case "7": // Bayshore Mall
+		retval = "BT300507"
+	case "8": // Grand Teton Mall
+		retval = "BT301188"
+	case "9": // Boise Town Center
+		retval = "BT301189"
+	case "10": // Silver Lake Mall
+		retval = "BT301190"
+	case "11": // Medford
+		retval = "BT300133"
+	case "12": // Newberg
+		retval = "BT300143"
 	}
 	return retval
 }
