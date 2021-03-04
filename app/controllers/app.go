@@ -141,7 +141,8 @@ func (c App) RemoteSell(location string, crypto string, fiat float64, hidden_uui
 	c.Validation.Required(crypto).Message("Crypto is a required field.")
 	c.Validation.MinSize(crypto, 3).Message("The value for crypto is not long enough.")
 
-	c.Validation.RangeFloat(fiat, 20.0, 3000.0).Message("Can only sell between $20 and $3000.")
+	// limit on transactions
+	c.Validation.RangeFloat(fiat, 20.0, 2980.0).Message("Can only sell between $20 and $2,980.")
 
 	// lookup the serial number from the location
 	serialNumber := c.LocationToSerialNumber(location)
