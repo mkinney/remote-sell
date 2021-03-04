@@ -8,3 +8,4 @@ none
 .DS_Store
 public/img/qr.png
 *.tar.gz
+revel

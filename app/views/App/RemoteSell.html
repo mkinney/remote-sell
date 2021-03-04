@@ -1,4 +1,4 @@
-{{set . "title" "Remote Sell"}}
+{{set . "title" "BitcoinNW Remote Sell Option"}}
 {{template "header.html" .}}
 
 &nbsp;You have requested to sell <b>${{.fiat}}</b> of <b>{{.crypto}}</b>
@@ -13,13 +13,19 @@
 <br>
 &nbsp;&nbsp;&nbsp;<b>{{.hidden_address}}</b>
 <br>
-&nbsp;Note: You probably can scan the QR below for your crypto wallet.
+&nbsp;Note: You probably can scan the QR below from your crypto wallet. If not, copy and paste the address above into your wallet.
 <br>
 <br>
-&nbsp;2. Go to the the location where the machine is located.
+&nbsp;2. It’s crucial that you save this screen — you will need it to withdraw cash from the machine, so take a screen shot!
 <br>
 <br>
-&nbsp;3. Click on "Redeem Ticket", scan this QR code and follow instructions:
+&nbsp;3. Go to https://mempool.space/ Copy and past this address <b>{{.hidden_address}}</b> into the search bar, wait for one confirmation before picking up, as the machine will not text you when it's ready.
+<br>
+<br>
+&nbsp;4. Finally go the the location where the machine is located.
+<br>
+<br>
+&nbsp;5. Click on "Redeem Ticket", scan this QR code and follow instructions on the screen:
 <br>
 <img src="/public/img/rs_{{.hidden_uuid}}.png">
 <br>

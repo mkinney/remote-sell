@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2019 Mike Kinney
+    Copyright (C) 2019,2020,2021 Mike Kinney
 		See LICENSE.txt
  */
 
@@ -108,7 +108,7 @@ func (c App) LocationToSerialNumber(location string) string {
 		retval = "BT300047"
 	case "4": // Salem City Center Mall
 		retval = "BT300076"
-	case "5": // Springfield
+	case "5": // 180th & Stark - Shell Station
 		retval = "BT300111"
 	case "6": // Mt. Shasta Mall
 		retval = "BT300406"
@@ -121,7 +121,7 @@ func (c App) LocationToSerialNumber(location string) string {
 	case "10": // Silver Lake Mall
 		retval = "BT301190"
 	case "11": // Medford
-		retval = "BTR00133"
+		retval = "BTR00123"
 	case "12": // Newberg
 		retval = "BTR00143"
 	}
